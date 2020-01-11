@@ -40,7 +40,6 @@ import { ObjectMap } from '../util/obj_map';
 import { Deferred } from '../util/promise';
 import { SortedMap } from '../util/sorted_map';
 
-import { ignoreIfPrimaryLeaseLoss } from '../local/indexeddb_persistence';
 import { ClientId, SharedClientState } from '../local/shared_client_state';
 import {
   QueryTargetState,
@@ -335,7 +334,7 @@ export class SyncEngine implements RemoteSyncer, SharedClientStateSyncer {
             this.remoteStore.unlisten(queryView.targetId);
             this.removeAndCleanupTarget(queryView.targetId);
           })
-          .catch(ignoreIfPrimaryLeaseLoss);
+          .catch(() => {});
       }
     } else {
       this.removeAndCleanupTarget(queryView.targetId);
@@ -431,9 +430,7 @@ export class SyncEngine implements RemoteSyncer, SharedClientStateSyncer {
         }
       });
       await this.emitNewSnapsAndNotifyLocalStore(changes, remoteEvent);
-    } catch (error) {
-      await ignoreIfPrimaryLeaseLoss(error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -515,7 +512,7 @@ export class SyncEngine implements RemoteSyncer, SharedClientStateSyncer {
       await this.localStore
         .releaseTarget(targetId, /* keepPersistedTargetData */ false)
         .then(() => this.removeAndCleanupTarget(targetId, err))
-        .catch(ignoreIfPrimaryLeaseLoss);
+        .catch(() => {});
     }
   }
 
@@ -578,9 +575,7 @@ export class SyncEngine implements RemoteSyncer, SharedClientStateSyncer {
       );
       this.sharedClientState.updateMutationState(batchId, 'acknowledged');
       await this.emitNewSnapsAndNotifyLocalStore(changes);
-    } catch (error) {
-      await ignoreIfPrimaryLeaseLoss(error);
-    }
+    } catch (error) {}
   }
 
   async rejectFailedWrite(
@@ -601,9 +596,7 @@ export class SyncEngine implements RemoteSyncer, SharedClientStateSyncer {
       const changes = await this.localStore.rejectBatch(batchId);
       this.sharedClientState.updateMutationState(batchId, 'rejected', error);
       await this.emitNewSnapsAndNotifyLocalStore(changes);
-    } catch (error) {
-      await ignoreIfPrimaryLeaseLoss(error);
-    }
+    } catch (error) {}
   }
 
   /**
@@ -1120,7 +1113,7 @@ export class SyncEngine implements RemoteSyncer, SharedClientStateSyncer {
           this.remoteStore.unlisten(targetId);
           this.removeAndCleanupTarget(targetId);
         })
-        .catch(ignoreIfPrimaryLeaseLoss);
+        .catch(() => {});
     }
   }
 

@@ -23,9 +23,8 @@ import { DatabaseId, DatabaseInfo } from '../core/database_info';
 import { ListenOptions } from '../core/event_manager';
 import {
   FirestoreClient,
-  IndexedDbPersistenceSettings,
-  InternalPersistenceSettings,
-  MemoryPersistenceSettings
+  PersistenceFactory,
+  startMemoryPersistence
 } from '../core/firestore_client';
 import {
   Bound,
@@ -38,7 +37,6 @@ import {
 } from '../core/query';
 import { Transaction as InternalTransaction } from '../core/transaction';
 import { ChangeType, ViewSnapshot } from '../core/view_snapshot';
-import { IndexedDbPersistence } from '../local/indexeddb_persistence';
 import { LruParams } from '../local/lru_garbage_collector';
 import { Document, MaybeDocument, NoDocument } from '../model/document';
 import { DocumentKey } from '../model/document_key';
@@ -82,7 +80,6 @@ import { LogLevel } from '../util/log';
 import { AutoId } from '../util/misc';
 import * as objUtils from '../util/obj';
 import { Rejecter, Resolver } from '../util/promise';
-import { Deferred } from './../util/promise';
 import { FieldPath as ExternalFieldPath } from './field_path';
 
 import {
@@ -121,8 +118,9 @@ const DEFAULT_FORCE_LONG_POLLING = false;
  */
 export const CACHE_SIZE_UNLIMITED = LruParams.COLLECTION_DISABLED;
 
-// enablePersistence() defaults:
-const DEFAULT_SYNCHRONIZE_TABS = false;
+const PERSISTENCE_MISSING_ERROR_MSG =
+  'You are using a modular build of Firestore. To enable ' +
+  'persistence, import "firebase/firestore/persistence".';
 
 /** Undocumented, private additional settings not exposed in our public API. */
 interface PrivateSettings extends firestore.Settings {
@@ -294,7 +292,7 @@ export class Firestore implements firestore.FirebaseFirestore, FirebaseService {
   private readonly _persistenceKey: string;
   private _credentials: CredentialsProvider;
   private readonly _firebaseApp: FirebaseApp | null = null;
-  private _settings: FirestoreSettings;
+  _settings: FirestoreSettings;
 
   // The firestore client instance. This will be available as soon as
   // configureClient is called, but any calls against it will block until
@@ -302,7 +300,7 @@ export class Firestore implements firestore.FirebaseFirestore, FirebaseService {
   //
   // Operations on the _firestoreClient don't block on _firestoreReady. Those
   // are already set to synchronize on the async queue.
-  private _firestoreClient: FirestoreClient | undefined;
+  _firestoreClient: FirestoreClient | undefined;
 
   // Public for use in tests.
   // TODO(mikelehen): Use modularized initialization instead.
@@ -382,65 +380,11 @@ export class Firestore implements firestore.FirebaseFirestore, FirebaseService {
   }
 
   enablePersistence(settings?: firestore.PersistenceSettings): Promise<void> {
-    if (this._firestoreClient) {
-      throw new FirestoreError(
-        Code.FAILED_PRECONDITION,
-        'Firestore has already been started and persistence can no longer ' +
-          'be enabled. You can only call enablePersistence() before calling ' +
-          'any other methods on a Firestore object.'
-      );
-    }
-
-    let synchronizeTabs = false;
-
-    if (settings) {
-      if (settings.experimentalTabSynchronization !== undefined) {
-        log.error(
-          "The 'experimentalTabSynchronization' setting has been renamed to " +
-            "'synchronizeTabs'. In a future release, the setting will be removed " +
-            'and it is recommended that you update your ' +
-            "firestore.enablePersistence() call to use 'synchronizeTabs'."
-        );
-      }
-      synchronizeTabs = objUtils.defaulted(
-        settings.synchronizeTabs !== undefined
-          ? settings.synchronizeTabs
-          : settings.experimentalTabSynchronization,
-        DEFAULT_SYNCHRONIZE_TABS
-      );
-    }
-
-    return this.configureClient(
-      new IndexedDbPersistenceSettings(
-        this._settings.cacheSizeBytes,
-        synchronizeTabs
-      )
-    );
+    throw new Error(PERSISTENCE_MISSING_ERROR_MSG);
   }
 
   clearPersistence(): Promise<void> {
-    const persistenceKey = IndexedDbPersistence.buildStoragePrefix(
-      this.makeDatabaseInfo()
-    );
-    const deferred = new Deferred<void>();
-    this._queue.enqueueAndForgetEvenAfterShutdown(async () => {
-      try {
-        if (
-          this._firestoreClient !== undefined &&
-          !this._firestoreClient.clientTerminated
-        ) {
-          throw new FirestoreError(
-            Code.FAILED_PRECONDITION,
-            'Persistence cannot be cleared after this Firestore instance is initialized.'
-          );
-        }
-        await IndexedDbPersistence.clearPersistence(persistenceKey);
-        deferred.resolve();
-      } catch (e) {
-        deferred.reject(e);
-      }
-    });
-    return deferred.promise;
+    throw new Error(PERSISTENCE_MISSING_ERROR_MSG);
   }
 
   terminate(): Promise<void> {
@@ -499,12 +443,12 @@ export class Firestore implements firestore.FirebaseFirestore, FirebaseService {
     if (!this._firestoreClient) {
       // Kick off starting the client but don't actually wait for it.
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.configureClient(new MemoryPersistenceSettings());
+      this._configureClient(startMemoryPersistence);
     }
     return this._firestoreClient as FirestoreClient;
   }
 
-  private makeDatabaseInfo(): DatabaseInfo {
+  makeDatabaseInfo(): DatabaseInfo {
     return new DatabaseInfo(
       this._databaseId,
       this._persistenceKey,
@@ -514,23 +458,18 @@ export class Firestore implements firestore.FirebaseFirestore, FirebaseService {
     );
   }
 
-  private configureClient(
-    persistenceSettings: InternalPersistenceSettings
-  ): Promise<void> {
+  _configureClient(persistenceFactory: PersistenceFactory): Promise<void> {
     assert(!!this._settings.host, 'FirestoreSettings.host is not set');
-
     assert(!this._firestoreClient, 'configureClient() called multiple times');
 
     const databaseInfo = this.makeDatabaseInfo();
-
     this._firestoreClient = new FirestoreClient(
       PlatformSupport.getPlatform(),
       databaseInfo,
       this._credentials,
       this._queue
     );
-
-    return this._firestoreClient.start(persistenceSettings);
+    return this._firestoreClient.start(persistenceFactory);
   }
 
   private createDataConverter(databaseId: DatabaseId): UserDataConverter {

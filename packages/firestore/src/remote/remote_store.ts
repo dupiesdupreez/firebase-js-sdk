@@ -32,7 +32,6 @@ import { FirestoreError } from '../util/error';
 import * as log from '../util/log';
 import * as objUtils from '../util/obj';
 
-import { ignoreIfPrimaryLeaseLoss } from '../local/indexeddb_persistence';
 import { DocumentKeySet } from '../model/collections';
 import { AsyncQueue } from '../util/async_queue';
 import { ConnectivityMonitor, NetworkStatus } from './connectivity_monitor';
@@ -593,7 +592,7 @@ export class RemoteStore implements TargetMetadataProvider {
           this.writeStream.writeMutations(batch.mutations);
         }
       })
-      .catch(ignoreIfPrimaryLeaseLoss);
+      .catch(() => {});
   }
 
   private onMutationResult(
@@ -670,7 +669,7 @@ export class RemoteStore implements TargetMetadataProvider {
 
       return this.localStore
         .setLastStreamToken(emptyByteString())
-        .catch(ignoreIfPrimaryLeaseLoss);
+        .catch(() => {});
     } else {
       // Some other error, don't reset stream token. Our stream logic will
       // just retry with exponential backoff.

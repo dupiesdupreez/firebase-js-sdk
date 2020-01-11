@@ -47,7 +47,6 @@ import { SortedMap } from '../util/sorted_map';
 import { LocalDocumentsView } from './local_documents_view';
 import { LocalViewChanges } from './local_view_changes';
 import { LruGarbageCollector, LruResults } from './lru_garbage_collector';
-import { IndexedDbRemoteDocumentCache } from './indexeddb_remote_document_cache';
 import { MutationQueue } from './mutation_queue';
 import { Persistence, PersistenceTransaction } from './persistence';
 import { PersistencePromise } from './persistence_promise';
@@ -1107,17 +1106,17 @@ export class LocalStore {
    */
   // PORTING NOTE: Multi-tab only.
   async synchronizeLastDocumentChangeReadTime(): Promise<void> {
-    if (this.remoteDocuments instanceof IndexedDbRemoteDocumentCache) {
-      const remoteDocumentCache = this.remoteDocuments;
-      return this.persistence
-        .runTransaction(
-          'Synchronize last document change read time',
-          'readonly-idempotent',
-          txn => remoteDocumentCache.getLastDocumentChange(txn)
-        )
-        .then(({ readTime }) => {
-          this.lastDocumentChangeReadTime = readTime;
-        });
-    }
+    // if (this.remoteDocuments instanceof IndexedDbRemoteDocumentCache) {
+    //   const remoteDocumentCache = this.remoteDocuments;
+    //   return this.persistence
+    //     .runTransaction(
+    //       'Synchronize last document change read time',
+    //       'readonly-idempotent',
+    //       txn => remoteDocumentCache.getLastDocumentChange(txn)
+    //     )
+    //     .then(({ readTime }) => {
+    //       this.lastDocumentChangeReadTime = readTime;
+    //     });
+    // }
   }
 }

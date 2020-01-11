@@ -81,7 +81,8 @@ export class MemoryPersistence implements Persistence {
     params: LruParams
   ): MemoryPersistence {
     const factory = (p: MemoryPersistence): MemoryLruDelegate =>
-      new MemoryLruDelegate(p, new LocalSerializer(serializer), params);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      new MemoryLruDelegate(p, null as any, params);
     return new MemoryPersistence(clientId, factory);
   }
 

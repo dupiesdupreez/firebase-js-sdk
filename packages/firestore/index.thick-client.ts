@@ -22,15 +22,11 @@ import './src/platform_browser/browser_init';
 import * as types from '@firebase/firestore-types';
 import { FirebaseNamespace } from '@firebase/app-types';
 
-import { enablePersistence, clearPersistence } from './src/api/persistence';
-
 import { name, version } from './package.json';
 
 export function registerFirestore(instance: FirebaseNamespace): void {
   configureForFirebase(instance);
   instance.registerVersion(name, version);
-  firebase.firestore!.prototype.enablePersistence = enablePersistence;
-  firebase.firestore!.prototype.clearPersistence = clearPersistence;
 }
 
 registerFirestore(firebase);

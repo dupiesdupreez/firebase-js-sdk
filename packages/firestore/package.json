@@ -24,8 +24,14 @@
   },
   "main": "dist/index.node.cjs.js",
   "browser": "dist/index.cjs.js",
+  "browserThickClient": "dist/thick-client/index.cjs.js",
+  "browserPersistence": "dist/persistence/index.cjs.js",
   "module": "dist/index.esm.js",
+  "moduleThickClient": "dist/thick-client/index.esm.js",
+  "modulePersistence": "dist/persistence/index.esm.js",
   "esm2017": "dist/index.esm2017.js",
+  "esm2017ThickClient": "dist/thick-client/index.esm2017.js",
+  "esm2017Persistence": "dist/persistence/index.esm2017.js",
   "license": "Apache-2.0",
   "files": [
     "dist"

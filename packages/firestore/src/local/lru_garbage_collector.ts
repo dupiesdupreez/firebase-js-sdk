@@ -24,7 +24,6 @@ import { primitiveComparator } from '../util/misc';
 import { CancelablePromise } from '../util/promise';
 import { SortedMap } from '../util/sorted_map';
 import { SortedSet } from '../util/sorted_set';
-import { ignoreIfPrimaryLeaseLoss } from './indexeddb_persistence';
 import { LocalStore } from './local_store';
 import { PersistenceTransaction } from './persistence';
 import { PersistencePromise } from './persistence_promise';
@@ -267,7 +266,7 @@ export class LruScheduler {
         return this.localStore
           .collectGarbage(this.garbageCollector)
           .then(() => this.scheduleGC())
-          .catch(ignoreIfPrimaryLeaseLoss);
+          .catch(() => {});
       }
     );
   }
