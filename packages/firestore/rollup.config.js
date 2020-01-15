@@ -74,15 +74,15 @@ const es5Builds = [
   // /**
   //  * Browser Builds
   //  */
-  // {
-  //   input: 'index.ts',
-  //   output: [
-  //     { file: pkg.browser, format: 'cjs', sourcemap: true },
-  //     { file: pkg.module, format: 'es', sourcemap: true }
-  //   ],
-  //   plugins: es5BuildPlugins,
-  //   external: id => deps.some(dep => id === dep || id.startsWith(`${dep}/`))
-  // },
+  {
+    input: 'index.ts',
+    output: [
+      { file: pkg.browser, format: 'cjs', sourcemap: true },
+      { file: pkg.module, format: 'es', sourcemap: true }
+    ],
+    plugins: es5BuildPlugins,
+    external: id => deps.some(dep => id === dep || id.startsWith(`${dep}/`))
+  },
   /**
    * Browser Builds
    */
@@ -109,20 +109,26 @@ const es5Builds = [
   {
     input: 'index.persistence.ts',
     output: [
-      { file: pkg.browserPersistence, format: 'cjs', sourcemap: true },
-      { file: pkg.modulePersistence, format: 'es', sourcemap: true }
+      { file: pkg.browserPersistence, format: 'cjs', sourcemap: true,  paths: (id) => {
+          return id.startsWith(__dirname) ? 'firebase/firestore/thick-client' : '';
+        }, },
+      { file: pkg.modulePersistence, format: 'es', sourcemap: true,  paths: (id) => {
+          return id.startsWith(__dirname) ? 'firebase/firestore/thick-client' : '';
+        }, },
     ],
     plugins: es5BuildPlugins,
-    external: (reference, referencedBy) => {
-      const externalRef = path
-        .resolve(path.dirname(referencedBy), reference)
-        .replace('.ts', '');
+    external: (id, parentId) => {
+      const externalRef = path.resolve(path.dirname(parentId), stripExtension(id));
       const isNotExternal = persistenceDeps.indexOf(externalRef) === -1;
       return isNotExternal;
     }
   }
 ];
 
+
+function stripExtension(id) {
+  return id.replace(/\.ts$/, "");
+}
 /**
  * ES2017 Builds
  */
