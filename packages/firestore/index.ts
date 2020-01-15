@@ -21,6 +21,7 @@ import './src/platform_browser/browser_init';
 
 import * as types from '@firebase/firestore-types';
 import { FirebaseNamespace } from '@firebase/app-types';
+import { _FirebaseNamespace } from '@firebase/app-types/private';
 
 import { enablePersistence, clearPersistence } from './src/api/persistence';
 
@@ -29,8 +30,21 @@ import { name, version } from './package.json';
 export function registerFirestore(instance: FirebaseNamespace): void {
   configureForFirebase(instance);
   instance.registerVersion(name, version);
-  firebase.firestore!.prototype.enablePersistence = enablePersistence;
-  firebase.firestore!.prototype.clearPersistence = clearPersistence;
+
+  (firebase as _FirebaseNamespace).INTERNAL.extendNamespace({
+    firestore: {
+      Firestore: {
+        prototype: {
+          enablePersistence(this: types.FirebaseFirestore, settings: types.PersistenceSettings)  {
+            return enablePersistence(this, settings);
+          },
+          clearPersistence(this: types.FirebaseFirestore)  {
+            return clearPersistence(this);
+          },
+        }
+      }
+    }
+  });
 }
 
 registerFirestore(firebase);

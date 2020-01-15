@@ -18,7 +18,19 @@
 import firebase from '@firebase/app';
 
 import { enablePersistence, clearPersistence } from './src/api/persistence';
+import { _FirebaseNamespace } from '@firebase/app-types/private';
 
-// register internal component
-firebase.firestore!.prototype.enablePersistence = enablePersistence;
-firebase.firestore!.prototype.clearPersistence = clearPersistence;
+export function registerFirestorePersistence(): void {
+  (firebase as _FirebaseNamespace).INTERNAL.extendNamespace({
+    firestore: {
+      Firestore: {
+        prototype: {
+          enablePersistence,
+          clearPersistence
+        }
+      }
+    }
+  });
+}
+
+registerFirestorePersistence();
