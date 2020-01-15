@@ -24,6 +24,37 @@ import { FirebaseNamespace } from '@firebase/app-types';
 
 import { name, version } from './package.json';
 
+export { FirestoreError, Code } from './src/util/error';
+export { defaulted } from './src/util/obj';
+export { startMemoryPersistence } from './src/core/firestore_client';
+export { ListenSequence } from './src/core/listen_sequence';
+export { DocumentKey } from './src/model/document_key';
+export { assert, fail } from './src/util/assert';
+export { TimerId } from './src/util/async_queue';
+export { debug, error } from './src/util/log';
+export { decode, encode } from './src/local/encoded_resource_path';
+export { primitiveComparator, immediateSuccessor } from './src/util/misc';
+export { ResourcePath } from './src/model/path';
+export { SnapshotVersion } from './src/core/snapshot_version';
+export { MutationBatch, BATCHID_UNKNOWN } from './src/model/mutation_batch';
+export { SortedSet } from './src/util/sorted_set';
+export { PersistencePromise } from './src/local/persistence_promise';
+export { getUA } from '@firebase/util';
+export { Deferred } from './src/util/promise';
+export { Timestamp } from './src/api/timestamp';
+export { documentKeySet, nullableMaybeDocumentMap, documentMap, maybeDocumentMap } from './src/model/collections';
+export { TargetIdGenerator } from './src/core/target_id_generator';
+export { NoDocument, Document, UnknownDocument } from './src/model/document';
+export { SortedMap } from './src/util/sorted_map';
+export { RemoteDocumentChangeBuffer } from './src/local/remote_document_change_buffer';
+export { ObjectMap } from './src/util/obj_map';
+export { MemoryCollectionParentIndex } from './src/local/memory_index_manager';
+export { TargetData, TargetPurpose } from './src/local/target_data';
+export { LruGarbageCollector, LruParams } from './src/local/lru_garbage_collector';
+export { PersistenceTransaction } from './src/local/persistence';
+export { JsonProtoSerializer } from './src/remote/serializer';
+export { WebStorageSharedClientState, MemorySharedClientState } from './src/local/shared_client_state';
+
 export function registerFirestore(instance: FirebaseNamespace): void {
   configureForFirebase(instance);
   instance.registerVersion(name, version);
