@@ -42,7 +42,12 @@ export { PersistencePromise } from './src/local/persistence_promise';
 export { getUA } from '@firebase/util';
 export { Deferred } from './src/util/promise';
 export { Timestamp } from './src/api/timestamp';
-export { documentKeySet, nullableMaybeDocumentMap, documentMap, maybeDocumentMap } from './src/model/collections';
+export {
+  documentKeySet,
+  nullableMaybeDocumentMap,
+  documentMap,
+  maybeDocumentMap
+} from './src/model/collections';
 export { TargetIdGenerator } from './src/core/target_id_generator';
 export { NoDocument, Document, UnknownDocument } from './src/model/document';
 export { SortedMap } from './src/util/sorted_map';
@@ -50,10 +55,16 @@ export { RemoteDocumentChangeBuffer } from './src/local/remote_document_change_b
 export { ObjectMap } from './src/util/obj_map';
 export { MemoryCollectionParentIndex } from './src/local/memory_index_manager';
 export { TargetData, TargetPurpose } from './src/local/target_data';
-export { LruGarbageCollector, LruParams } from './src/local/lru_garbage_collector';
+export {
+  LruGarbageCollector,
+  LruParams
+} from './src/local/lru_garbage_collector';
 export { PersistenceTransaction } from './src/local/persistence';
 export { JsonProtoSerializer } from './src/remote/serializer';
-export { WebStorageSharedClientState, MemorySharedClientState } from './src/local/shared_client_state';
+export {
+  WebStorageSharedClientState,
+  MemorySharedClientState
+} from './src/local/shared_client_state';
 
 export function registerFirestore(instance: FirebaseNamespace): void {
   configureForFirebase(instance);

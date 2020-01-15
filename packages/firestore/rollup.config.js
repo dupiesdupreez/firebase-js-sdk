@@ -109,25 +109,41 @@ const es5Builds = [
   {
     input: 'index.persistence.ts',
     output: [
-      { file: pkg.browserPersistence, format: 'cjs', sourcemap: true,  paths: (id) => {
-          return id.startsWith(__dirname) ? 'firebase/firestore/thick-client' : '';
-        }, },
-      { file: pkg.modulePersistence, format: 'es', sourcemap: true,  paths: (id) => {
-          return id.startsWith(__dirname) ? 'firebase/firestore/thick-client' : '';
-        }, },
+      {
+        file: pkg.browserPersistence,
+        format: 'cjs',
+        sourcemap: true,
+        paths: id => {
+          return id.startsWith(__dirname)
+            ? 'firebase/firestore/thick-client'
+            : '';
+        }
+      },
+      {
+        file: pkg.modulePersistence,
+        format: 'es',
+        sourcemap: true,
+        paths: id => {
+          return id.startsWith(__dirname)
+            ? 'firebase/firestore/thick-client'
+            : '';
+        }
+      }
     ],
     plugins: es5BuildPlugins,
     external: (id, parentId) => {
-      const externalRef = path.resolve(path.dirname(parentId), stripExtension(id));
+      const externalRef = path.resolve(
+        path.dirname(parentId),
+        stripExtension(id)
+      );
       const isNotExternal = persistenceDeps.indexOf(externalRef) === -1;
       return isNotExternal;
     }
   }
 ];
 
-
 function stripExtension(id) {
-  return id.replace(/\.ts$/, "");
+  return id.replace(/\.ts$/, '');
 }
 /**
  * ES2017 Builds
