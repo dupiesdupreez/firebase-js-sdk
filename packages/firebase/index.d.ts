@@ -4402,7 +4402,7 @@ declare namespace firebase.analytics {
     setAnalyticsCollectionEnabled(enabled: boolean): void;
   }
 
-  export type CustomEventName<T> = T extends EventNameString ? never : T;
+  export type CustomEventName<T> = T;
 
   /**
    * Additional options that can be passed to Firebase Analytics method
